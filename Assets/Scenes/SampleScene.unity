@@ -2449,7 +2449,7 @@ MonoBehaviour:
   bulletPrefabLifeTime: 3
   isShooting: 0
   isHot: 0
-  fireRate: 0.0125
+  fireRate: 0.002
   timeCounterDuration: 10
   coolSpeed: 3
   heatSpeed: 2

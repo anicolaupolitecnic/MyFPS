@@ -10,6 +10,9 @@ public class WeaponController : MonoBehaviour {
         Raycast
     }
 
+    public Camera playerCamera;
+    public float spreadIntensity;
+
     public Image panel;
     public TMP_Text counter;
 
@@ -67,7 +70,6 @@ public class WeaponController : MonoBehaviour {
             if (elapsedTime <= timeCounterDuration) {
                 elapsedTime += Time.deltaTime * heatSpeed;
                 FireWeapon();
-
             } else {
                 isHot = true;
                 //smokeParticles.SetActive(true);
@@ -114,7 +116,7 @@ public class WeaponController : MonoBehaviour {
 
     void CheckTemperature() {
         if (!isHot) {
-            //counter.text = "" + (int) (elapsedTime*10) + "%";
+            counter.text = "" + (int) (elapsedTime*10) + "%";
             newColor = gradient.Evaluate(elapsedTime/timeCounterDuration);
             newColor.a = 0.5f;
             panel.color = newColor; 
@@ -128,9 +130,9 @@ public class WeaponController : MonoBehaviour {
     }
 
     private void FireWeapon() {
-        Debug.Log("fireTime: " + Abs((Time.deltaTime - lastShot)).ToString());
-        if ((Time.deltaTime - lastShot) > fireRate) {
-            lastShot = Time.deltaTime;
+        lastShot += Time.deltaTime;
+        if (lastShot >=  fireRate) {
+            lastShot = lastShot - fireRate;           
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.identity);
             bullet.GetComponent<Rigidbody>().AddForce(bulletSpawn.forward.normalized * bulletVelocity, ForceMode.Impulse);
             StartCoroutine(DestroyBulletAfterTime(bullet, bulletPrefabLifeTime));
@@ -142,4 +144,18 @@ public class WeaponController : MonoBehaviour {
         Destroy(bullet);
     }
 
+    public Vector3 CalculateDirectionAndSpread() {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit hit;
+
+        Vector3 targetPoint;
+
+        if (Physics.Raycast(ray, out hit)) {
+            targetPoint = hit.point;
+        } else {
+            targetPoint = ray.GetPoint(100);
+        }
+        
+        return targetPoint;
+    }
 }
