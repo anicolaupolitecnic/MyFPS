@@ -7,10 +7,20 @@ public class WeaponController : MonoBehaviour {
     public Transform bulletSpawn;
     public float bulletVelocity = 30;
     public float bulletPrefabLifeTime = 3f;
+    public bool canShoot = true;
+    float timer;
+    public float shootDelay = 1f;
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.Mouse0)) {
-            FireWeapon();
+        if (Input.GetKey(KeyCode.Mouse0)) {
+            if (canShoot) {
+                FireWeapon();
+                canShoot = false;
+                timer = Time.deltaTime;
+            }
+        }
+        if (!canShoot && ((Time.deltaTime - timer) > shootDelay)) {
+            canShoot = true;
         }
     }
 
