@@ -836,7 +836,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519731527}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -2063,6 +2063,8 @@ MonoBehaviour:
   bulletSpawn: {fileID: 752611266}
   bulletVelocity: 30
   bulletPrefabLifeTime: 3
+  canShoot: 1
+  shootDelay: 1
 --- !u!4 &2111267620
 Transform:
   m_ObjectHideFlags: 0
