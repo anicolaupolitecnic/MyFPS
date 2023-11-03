@@ -7,6 +7,7 @@ TagManager:
   - Target
   - Wall
   - Ground
+  - FX_AudioSource
   layers:
   - Default
   - TransparentFX
