@@ -27,6 +27,16 @@ public class WeaponController : MonoBehaviour {
     [SerializeField] public float fireRate;
     float lastShot = 0; 
 
+    private Vector3 laserImpactPos;
+    private bool isRayCastShooting;
+    private float pointerInterpolator;
+    [SerializeField] private Transform shootPoint;
+    [SerializeField] private ParticleSystem smokePS;
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip shootFX;
+    [SerializeField] private AudioClip tempFX;
+
+
     //TEMPERATURE
     [SerializeField] private float timeCounterDuration;
     [SerializeField] private float coolSpeed;
@@ -38,6 +48,8 @@ public class WeaponController : MonoBehaviour {
     GradientAlphaKey[] alphaKey;
 
     void Start() {
+        audioSource = GetComponent<AudioSource>();
+        smokePS.Stop();
         Gradient();
     }
 
@@ -69,17 +81,21 @@ public class WeaponController : MonoBehaviour {
         if (isShooting && !isHot) {
             if (elapsedTime <= timeCounterDuration) {
                 elapsedTime += Time.deltaTime * heatSpeed;
-                FireWeapon();
+                if (mode.Equals(Mode.Bullets)) {
+                    FireWeapon();
+                }
+                else
+                    RayCastShot();
             } else {
                 isHot = true;
-                //smokeParticles.SetActive(true);
+                smokePS.Play();
             }
         } else if (!isShooting) {
             if (elapsedTime > 0) {
                 elapsedTime -= Time.deltaTime * coolSpeed;
                 if (elapsedTime < 0)
                     elapsedTime = 0;
-            } else {
+            } else if (isHot) {
                 ShootingAvailable();
             }
         }
@@ -90,8 +106,8 @@ public class WeaponController : MonoBehaviour {
         newColor.a = 0.5f;
         panel.color = newColor;
         isHot = false;
-        //audioSource.Stop();
-        //smokeParticles.SetActive(false);
+        audioSource.Stop();
+        smokePS.Stop();
     }
 
     void Gradient() {
@@ -121,7 +137,7 @@ public class WeaponController : MonoBehaviour {
             newColor.a = 0.5f;
             panel.color = newColor; 
         } else {
-            //PlayAudioTemp();
+            PlayAudioTemp();
             counter.text = "HOT!!";
             newColor = gradient.Evaluate(elapsedTime/timeCounterDuration);
             newColor.a = 0.5f;
@@ -136,6 +152,7 @@ public class WeaponController : MonoBehaviour {
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.identity);
             bullet.GetComponent<Rigidbody>().AddForce(bulletSpawn.forward.normalized * bulletVelocity, ForceMode.Impulse);
             StartCoroutine(DestroyBulletAfterTime(bullet, bulletPrefabLifeTime));
+                PlayAudioShoot();
         }
     }
 
@@ -144,18 +161,33 @@ public class WeaponController : MonoBehaviour {
         Destroy(bullet);
     }
 
-    public Vector3 CalculateDirectionAndSpread() {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit hit;
+    private void RayCastShot() {
+        //AudioManager.I.PlaySound(SoundName.RaycastShot, shootPoint.position);
+        laserImpactPos = new Vector3(0, 1000, 0);
+        if (Physics.Raycast(shootPoint.position, shootPoint.forward, out RaycastHit hit, Mathf.Infinity)) {
+            laserImpactPos = new Vector3(0, Vector3.Distance(shootPoint.position, hit.point),0);
+            //ParticleSystem laserImpact = Instantiate(laserImpactPrefab, hit.point, Quaternion.identity);
+            //Destroy(laserImpact, 2f);
 
-        Vector3 targetPoint;
-
-        if (Physics.Raycast(ray, out hit)) {
-            targetPoint = hit.point;
-        } else {
-            targetPoint = ray.GetPoint(100);
+            if (hit.transform.gameObject.tag == "Target") {
+                print("Hit: " + hit.transform.gameObject.name + "!");
+            }
         }
-        
-        return targetPoint;
+        isRayCastShooting = true;
+        pointerInterpolator = 0;
+    }
+
+    void PlayAudioTemp() {
+        audioSource.clip = tempFX;
+        audioSource.loop = true;
+        if (!audioSource.isPlaying)
+            audioSource.Play();
+    }
+
+    void PlayAudioShoot() {
+        audioSource.clip = shootFX;
+        audioSource.loop = false;
+        if (!audioSource.isPlaying)
+            audioSource.Play();
     }
 }
