@@ -171,6 +171,9 @@ public class WeaponController : MonoBehaviour {
 
             if (hit.transform.gameObject.tag == "Target") {
                 print("Hit: " + hit.transform.gameObject.name + "!");
+            } else if (hit.transform.gameObject.tag == "Enemy") {
+                hit.transform.gameObject.GetComponent<Animator>().SetBool("die", true); 
+                print("Enemic");
             }
         }
         isRayCastShooting = true;
